@@ -1,0 +1,17 @@
+version: "3.4"
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: .docker/app/Dockerfile
+      target: dev
+    volumes:
+      - "./src:/var/www/html:${VOLUME_CONSISTENCY:-consistent}"
+    environment:
+      - HOST_UID
+      - HOST_GID
+      - "XDEBUG_PORT=${XDEBUG_PORT:-9000}"
+      - "PHP_IDE_CONFIG=${PHP_IDE_CONFIG:-serverName=localhost}"
+    ports:
+      - "${WEB_PORT:-80}:80"
