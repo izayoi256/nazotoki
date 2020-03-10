@@ -228,4 +228,5 @@ return [
 
     ],
 
+    'episode_expires_in' => env('EPISODE_EXPIRES_IN', 3600),
 ];
