@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Core\EpisodeManager;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 
 final class EndingAction extends Controller
 {
@@ -17,9 +18,14 @@ final class EndingAction extends Controller
 
     public function __invoke(Request $request)
     {
-        $step = $this->episodeManager->step();
+        if (!$this->episodeManager->hasEpisode()) {
+            return redirect(route('home'));
+        }
 
-        if ($step === null || $step < 4) {
+        $step = $this->episodeManager->step();
+        $stepView = sprintf('step.%s', $step);
+
+        if (View::exists($stepView)) {
             return view('ending.failed');
         }
 

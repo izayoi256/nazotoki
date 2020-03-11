@@ -17,7 +17,7 @@ final class StartAction extends Controller
 
     public function __invoke(Request $request)
     {
-        if ($this->episodeManager->episode() === null) {
+        if (!$this->episodeManager->hasEpisode()) {
             $this->episodeManager->newEpisode();
         }
         return redirect(route('step', ['step' => $this->episodeManager->step()]));
