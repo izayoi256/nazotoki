@@ -2,20 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Core\EpisodeManager;
 use Illuminate\Http\Request;
 
 final class AnswerStepAction extends Controller
 {
+    /** @var EpisodeManager */
+    private $episodeManager;
+
+    public function __construct(EpisodeManager $episodeManager)
+    {
+        $this->episodeManager = $episodeManager;
+    }
+
     public function __invoke(Request $request, int $step)
     {
         $request->validate($this->rule($step));
 
-        $episode = $request->session()->get('episode');
-        $progress = $episode['progress'] ?? 0;
-        $episode['progress'] = $progress | (1 << $step);
-        $request->session()->put('episode', $episode);
+        $this->episodeManager->passStep($step);
 
-        return redirect(route('step', ['step' => $step + 1]));
+        return redirect(route('step', ['step' => $this->episodeManager->step()]));
     }
 
     private function rule(int $step): array

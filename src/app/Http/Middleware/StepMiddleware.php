@@ -2,33 +2,34 @@
 
 namespace App\Http\Middleware;
 
+use App\Core\EpisodeManager;
 use Illuminate\Http\Request;
 
 final class StepMiddleware
 {
+    /** @var EpisodeManager */
+    private $episodeManager;
+
+    public function __construct(EpisodeManager $episodeManager)
+    {
+        $this->episodeManager = $episodeManager;
+    }
+
     public function handle(Request $request, \Closure $next)
     {
-        $episode = $request->session()->get('episode');
-
-        if ($episode === null) {
+        if (!$this->episodeManager->hasEpisode()) {
             return redirect(route('home'));
         }
 
-        $now = new \DateTimeImmutable();
-        $expiresAt = $episode['expiresAt'] ?? $now;
-        if ($expiresAt <= $now) {
+        if ($this->episodeManager->expired()) {
             return redirect(route('ending'));
         }
 
-        $progress = $episode['progress'] ?? 0;
-        $step = $request->route()->parameter('step') ?? 1;
+        $step = (int)($request->route()->parameter('step') ?? 1);
+        $currentStep = $this->episodeManager->step();
 
-        if (($progress & (1 << ($step - 1))) === 0) {
-            return redirect(route('step', ['step' => $step - 1]));
-        }
-
-        if ($progress >= (1 << $step)) {
-            return redirect(route('step', ['step' => $step + 1]));
+        if ($step !== $currentStep) {
+            return redirect(route('step', ['step' => $currentStep]));
         }
 
         return $next($request);
